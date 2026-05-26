@@ -1,0 +1,86 @@
+{extends "base.html"}
+{block name="myHeader"}
+    <link rel="stylesheet" href="grid.css">
+    <style>
+    select { color: inherit; }
+    .ui-widget { font-size: 14px; }
+    .dates { color: inherit; }
+    .littleButton {
+        border-radius: 16px;
+        padding: 0 16px;
+        background: var(--bluey);
+        text-transform: uppercase;
+    }
+    #from, #to { width: 4em; }
+    .was-validated input:invalid { color: var(--space-white); background: var(--red); }
+    .invalid-message { display:none; }
+    .was-validated:has(:invalid) .invalid-message {
+        display: block;
+    }
+    .sidebar-nav button { background-color: var(--magenta); }
+    </style>
+{/block}
+{block name="content"}
+    <form action="index.php" method="post" class="mainForm" novalidate>
+        <div class="row">
+            <label for="cognome">Cognome:</label>
+            <div class="fields">
+                <input id="cognome" name="cognome" type="text" required>
+            </div>
+        </div>
+        <div class="row">
+            <label for="nome">Nome:</label>
+            <div class="fields">
+                <input id="nome" name="nome" type="text" required>
+            </div>
+        </div>
+        <div class="row">
+            <label for="sesso">Sesso:</label>
+            <div class="fields">
+                <select id="sesso" name="sesso">
+                    <option value="M">maschio</option>
+                    <option value="F">femmina</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <label for="ddn">Data di nascita:</label>
+            <div class="fields">
+                <input id="ddn" name="ddn" type="date" required>
+            </div>
+        </div>
+        <div class="row">
+            <label for="ldn-name">Luogo di n.:</label>
+            <div class="fields">
+                <input id="ldn-name" type="text" required>
+                <input id="ldn" name="ldn" type="hidden" required>
+            </div>
+        </div>
+        <div class="actions">
+            <button name="action" type="submit" value="insert" class="littleButton">Engage!</button>
+        </div>
+        <div class="invalid-message blink-fast font-red">ERRORE NEI CAMPI EVIDENZIATI!</div>
+    </form>
+{/block}
+{block name="myFooter"}
+    <script>
+        $('form').on('submit',function(ev){
+            $(this).addClass('was-validated');
+            if (!this.checkValidity()) {
+                ev.preventDefault();
+                ev.stopPropagation();
+            }
+        });
+        $('#countryName').autocomplete({
+            source: "{$serverURL}/mini/search_country.php",
+            minLength: 3,
+            select: function(event,ui) {
+                $('#country').val(ui.item.value);
+                $('#countryName').val(ui.item.label);
+                if (ui.item.eif) $('#apo').val(1);
+                else $('#apo').val(0);
+                return false;
+            }
+        });
+    </script>
+{/block}

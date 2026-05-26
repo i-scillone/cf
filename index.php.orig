@@ -1,0 +1,242 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Codice Fiscale</title>
+<link rel="stylesheet" href="/my_reset.css">
+<script src="/jquery-ui/external/jquery/jquery.min.js"></script>
+<script src="/jquery-ui/jquery-ui.min.js"></script>
+<script src="/jquery-ui/i18n/datepicker-it.js"></script>
+<link rel="stylesheet" href="/jquery-ui/themes/redmond/jquery-ui.min.css">
+<style>
+body { color: #00ff00; background: black; }
+fieldset { border-color: #00ff00; }
+h1,h2 { text-align: center; }
+h1 { font-size: 32px; }
+h2 { font-size: 24px; font-weight: normal; }
+.myResult { white-space: pre; font-family: monospace; }
+.ui-button-text-only .ui-button-text, .ui-selectmenu-button span.ui-selectmenu-text { padding: 2px 4px; }
+.ui-selectmenu-button { vertical-align: middle; }
+</style>
+<script>
+$(function(){
+	$("button").button();
+	$("#ddn").datepicker({ changeYear: true });
+	$("#ldn").autocomplete({
+		source: "cod_fis_ajax.php"
+	});
+	$("select").selectmenu({ width: 130 });
+	$(".myText").blur(function(ev){
+		this.value=this.value.toUpperCase();
+	});
+});
+</script>
+</head>
+<body>
+<h1>CODICE FISCALE</h1>
+<?php
+setlocale(LC_ALL,'ita','it');
+function formParser($source,$data,$attr=array(),$enc='UTF-8')
+{
+    if (empty($data)) return $source;
+    $doc=new DOMDocument();
+    $doc->loadHTML(mb_convert_encoding($source,'HTML-ENTITIES',$enc));
+    $xpath=new DOMXPath($doc);
+    foreach ($data as $k=>$v) {
+        $found=$xpath->query("//*[@name='$k']");
+        $node=$found->item(0);
+        switch (strtolower($node->tagName)) {
+        case 'input':
+            switch ($node->getAttribute('type')) {
+            case 'text':
+            case 'hidden':
+                $node->setAttribute('value',$v);
+                break;
+            case 'checkbox':
+                $node->setAttribute('checked',$v);
+                break;
+            case 'radio':
+                $radio=$xpath->query("//*[@value='$v']");
+                $radio->item(0)->setAttribute('checked',$v);
+                break;
+            }
+            break;
+        case 'select':
+            // Cancella la selezione precedente
+            $opt=$xpath->query('option[@selected]',$node);
+            if ($opt->length>0) $opt->item(0)->removeAttribute('selected');
+            // Nuova selezione
+            $opt=$xpath->query("option[@value='$v']",$node);
+            if ($opt->length>0) $opt->item(0)->setAttribute('selected',$v);
+            break;
+        case 'textarea':
+            $node->nodeValue=$v;
+            break;
+        case 'button':
+            /*
+                Ora la disab. è gestita con l'array degli attributi,
+                qui si cambia l'etichetta del pulsante
+            */
+            if ($v!='') $node->nodeValue=$v;
+            break;
+        }
+        if (array_key_exists($k,$attr)) {
+            $node->setAttribute($attr[$k][0],$attr[$k][1]);
+        }
+    }
+    $body=$doc->getElementsByTagName('body')->item(0);
+    return $doc->saveHTML($body->firstChild);
+}
+
+class CodiceFiscale
+{
+    private $db,$mesi,$dispari;
+    public $codice,$ddn,$ldn,$sesso;
+    
+    public function dbg($x)
+    {
+        $info=debug_backtrace();
+        echo $info[0]['line'],"\t",json_encode($x),"\n";
+    }
+    public function __construct()
+    {
+        $this->mesi='ABCDEHLMPRST';
+        $this->dispari=array(1,0,5,7,9,13,15,17,19,21,2,4,18,20,11,3,6,8,12,14,16,10,22,25,24,23);
+        $this->codice='';
+        $this->ddn=0;
+        $this->ldn='';
+        $this->sesso='';
+        try { $this->db=new PDO('sqlite:cod_fis.db'); }
+        catch (PDOException $e) { die($e->getMessage); }
+        $this->db->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+    }
+    function __destruct()
+    {
+        unset($this->db);
+    }
+    private function estrae($testo)
+    {
+        $testo=str_split(strtoupper($testo));
+        $cons=preg_grep('/[BCDFGHJKLMNPQRSTVWXYZ]/i',$testo);
+        $voca=preg_grep('/[AEIOU]/i',$testo);
+        return array('C'=>implode($cons),'V'=>implode($voca));
+    }
+    private function compone($cosa,$lettere)
+    {
+        $res='';
+        $totC=strlen($lettere['C']);
+        $totV=strlen($lettere['V']);
+        if ($cosa=='N' && $totC>=4) $res=$lettere['C'][0].$lettere['C'][2].$lettere['C'][3];
+        elseif ($totC>=3) $res=$lettere['C'][0].$lettere['C'][1].$lettere['C'][2];
+        elseif ($totC==2) $res=$lettere['C'][0].$lettere['C'][1].$lettere['V'][0];
+        elseif ($totC==1 && $totV==2) $res=$lettere['C'][0].$lettere['V'][0].$lettere['V'][1];
+        elseif ($totC==1 && $totV==1) $res=$lettere['C'][0].$lettere['V'][0].'X';
+        elseif ($totV>=2) $res=$lettere['V'][0].$lettere['V'][1].'X';
+        return $res;
+    }
+    public function controllo($testo)
+    {
+        $testo=strtoupper($testo);
+        $lun=strlen($testo);
+        $somma=0;
+        for ($p=0;$p<$lun;$p++) {
+            $ascii=ord($testo[$p]);
+            if (($p+1)%2==0) {
+                if ($ascii>=0x41 && $ascii<=0x5a) $somma+=$ascii-0x41;
+                else $somma+=$ascii-0x30;
+            } else {
+                if ($ascii>=0x41 && $ascii<=0x5a) $somma+=$this->dispari[$ascii-0x41];
+                else $somma+=$this->dispari[$ascii-0x30];
+            }
+        }
+        return chr($somma%26+0x41);
+    }
+    public function genera($datiAnag)
+    {
+        $cognome=$this->estrae($datiAnag['cognome']);
+        $nome=$this->estrae($datiAnag['nome']);
+        $this->codice=$this->compone('C',$cognome);
+        $this->codice.=$this->compone('N',$nome);
+        $this->codice.=substr($datiAnag['ddn'],-2);
+        $mese=(int)substr($datiAnag['ddn'],3,2);
+        $this->codice.=$this->mesi[$mese-1];
+        $giorno=(int)substr($datiAnag['ddn'],0,2);
+        if ($datiAnag['sesso']=='F') $giorno+=40;
+        $this->codice.=sprintf('%02d',$giorno);
+        $st=$this->db->prepare('SELECT CodFisco FROM comuni WHERE lower(comune)=?');
+        $st->execute(array(strtolower($datiAnag['ldn'])));
+        $comune=$st->fetch(PDO::FETCH_NUM);
+        if ($comune===false) {
+            $st=$this->db->prepare('SELECT codice FROM stati WHERE lower(denominaz)=?');
+            $st->execute(array(strtolower($datiAnag['ldn'])));
+            $comune=$st->fetch(PDO::FETCH_NUM);
+            if ($comune===false) die("<p>Luogo di nascita sconosciuto!\n");
+        }
+        $this->codice.=$comune[0];
+        $this->codice.=$this->controllo($this->codice);
+        return $this->codice;
+    }
+    public function decodifica($x)
+    {
+        $valido=false;
+        $x=strtoupper($x);
+        $contr=$this->controllo(substr($x,0,-1));
+        if ($contr==$x[15]) {
+            $this->codice=$x;
+            $valido=true;
+            $anno=1900+(int)substr($x,6,2);
+            $mese=strpos($this->mesi,$x[8])+1;
+            $giorno=(int)substr($x,9,2);
+            if ($giorno>40) {
+                $this->sesso='F';
+                $giorno-=40;
+            } else $this->sesso='M';
+            $this->ddn=mktime(0,0,0,$mese,$giorno,$anno);
+            $st=$this->db->prepare('SELECT Comune FROM comuni WHERE CodFisco=?');
+            $st->execute(array(substr($x,11,4)));
+            $row=$st->fetch(PDO::FETCH_NUM);
+            if ($row===false) {
+                $st=$this->db->prepare('SELECT denominaz FROM stati WHERE codice=?');
+                $st->execute(array(substr($x,11,4)));
+                $row=$st->fetch(PDO::FETCH_NUM);
+            }
+            $this->ldn=$row[0];
+        }
+        return $valido;
+    }
+}
+echo formParser(<<<HTML
+<form action="index.php" method="post">
+<fieldset><legend>Codifica</legend>
+<p>Cognome e nome: <input class="myText" name="cognome" type="text" size=40> <input class="myText" name="nome" type="text" size=40>
+<p>
+    Data e luogo di nascita:
+    <input id="ddn" name="ddn" type="text" size=12>
+    <input id="ldn" name="ldn" type="text" size=40>
+<p>Sesso: <select name="sesso"><option value="F">femmina</option><option value="M">maschio</option></select>
+<p style="text-align: center"><button name="codifica" type="submit">Esegui</button>
+</fieldset>
+<fieldset><legend>Decodifica</legend>
+<p>Codice: <input class="myText" name="codice" type="text" size=18>
+<p style="text-align: center">
+    <button name="decod" type="submit">Esegui</button>
+</fieldset>
+</form>
+HTML
+,$_POST);
+$cf=new CodiceFiscale();
+echo '<div class="myResult">';
+if (isset($_POST['codifica'])) {
+    echo '<h2>Il Codice è '.$cf->genera($_POST)."</h2>\n";
+} elseif (isset($_POST['decod'])) {
+    if ($cf->decodifica($_POST['codice'])) {
+        echo "<h2>{$cf->codice} è un codice valido…</h2>\n";
+        printf("ed appartiene ad una persona di sesso %s\n",($cf->sesso=='M'?'maschile':'femminile'));
+        echo "nata il ".strftime("%d %B %Y",$cf->ddn);
+        echo " a/in {$cf->ldn}\n";
+    } else echo "<h2>{$_POST['codice']} NON è un codice valido</h2>\n";
+}
+echo "</div>\n";
+?>
+</body>
+</html>

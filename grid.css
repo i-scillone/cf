@@ -1,0 +1,29 @@
+.mainForm {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 600px;
+}
+.mainForm .row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: center;
+    gap: 12px;
+}
+.mainForm .row label { font-weight: bold; }
+.mainForm .fields {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+}
+.mainForm .fields > * { min-width: 0; }
+.mainForm input[type=text], 
+.mainForm input[type=date], 
+.mainForm input[type=number] {
+    padding: 4px 8px;
+}
+.mainForm .actions {
+    text-align: center;
+    margin-top: 8px;
+}

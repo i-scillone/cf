@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Classic mini</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="date=no">
+    <link rel="stylesheet" type="text/css" href="assets/classic.css">
+    <script src="vendor/npm-asset/jquery/dist/jquery.min.js"></script>
+    <script src="vendor/npm-asset/jquery-ui-dist/dist/jquery-ui.min.js"></script>
+    <script src="vendor/npm-asset/jquery-ui-dist/ui/i18n/datepicker-it.js"></script>
+    <link rel="stylesheet" href="vendor/npm-asset/jquery-ui-dist/dist/themes/vader/jquery-ui.min.css">
+    {block name="myHeader"}{/block}
+</head>
+<body>
+    <audio id="audio1" src="assets/beep1.mp3" preload="auto"></audio>
+    <audio id="audio2" src="assets/beep2.mp3" preload="auto"></audio>
+    <audio id="audio3" src="assets/beep3.mp3" preload="auto"></audio>
+    <audio id="audio4" src="assets/beep4.mp3" preload="auto"></audio>
+    <section class="wrap-standard" id="column-3">
+        <div class="wrap">
+            <div class="left-frame-top">
+                <!--
+                *** LCARS PANEL BUTTON ***
+                Replace the hashtag '#' with a real URL (or not) in the following <button> tag. If you do not want a sound effect for this link, replace the <button> element with the following <div> + <a> elements:
+                    
+                <div class="panel-1">
+                    <a href="#">LCARS</a>
+                </div>
+                -->
+                <div class="panel-2">02<span class="hop">-262000</span></div>
+            </div>
+            <div class="right-frame-top">
+                <div class="banner">LCARS &#149; 47988</div>
+                <div class="bar-panel first-bar-panel">
+                    <div class="bar-1"></div>
+                    <div class="bar-2"></div>
+                    <div class="bar-3"></div>
+                    <div class="bar-4"></div>
+                    <div class="bar-5"></div>
+                </div>
+            </div>
+        </div>
+        <div class="wrap" id="gap">
+            <div class="left-frame">
+                <!--
+                ** SCROLL TO TOP OF PAGE BUTTON **
+                This button is initially hidden, and is styled like a panel in the sidebar. It appears at the bottom of the page after vertical scrolling. If you don't want the sound effect, replace with this:
+                <button onclick="topFunction()" id="topBtn"><span class="hop">screen</span> top</button>
+                -->
+                <button onclick="topFunction(); playSoundAndRedirect('audio4', '#')" id="topBtn"><span class="hop">screen</span> top</button>
+                <div>
+                    <div class="panel-3">03<span class="hop">-111968</span></div>
+                    <div class="sidebar-nav">
+                        <button onclick="playSoundAndRedirect('audio2', 'index.php?action=download')">Download</button>
+                        <button onclick="playSoundAndRedirect('audio2', '#')">button 02</button>
+                    </div>
+                    <div class="panel-4">04<span class="hop">-041969</span></div>
+                    <div class="panel-5">05<span class="hop">-1701D</span></div>
+                    <div class="panel-6">06<span class="hop">-071984</span></div>
+                    <div class="panel-7">07<span class="hop">-081940</span></div>
+                    <div class="panel-8">08<span class="hop">-47148</span></div>
+                    <div class="panel-9">09<span class="hop">-081966</span></div>
+                </div>
+                <div>
+                    <div class="panel-10">10<span class="hop">-31</span></div>
+                </div>
+            </div>
+            <div class="right-frame">
+                <div class="bar-panel">
+                    <div class="bar-6"></div>
+                    <div class="bar-7"></div>
+                    <div class="bar-8"></div>
+                    <div class="bar-9"></div>
+                    <div class="bar-10"></div>
+                </div>
+                <main>
+                    {block name="content"}
+                    <!-- Start your content here. -->
+
+                    <h1>Hello</h1>
+                    <h2>Welcome to LCARS &#149; Classic Theme &#149; Standard Layout</h2>
+                    <h3 class="font-gold">Version 24.2</h3>					
+                    <h4>Replace This Content With Your Own</h4>
+                    <p class="go-big">Live long and prosper.</p>					
+
+                    <!-- End content area. -->
+                    {/block}
+                    {if $feedback}
+                        {$feedback}
+                    {/if}
+                </main>
+                <footer>
+                    <!-- Your copyright information is only a suggestion and you can choose to delete it. -->
+                     Content © 2023 Ivan SCILLONE. Concesso in licenza a norma dell'EUPL<br>
+
+                    <!-- The following attribution must not be removed: -->
+                    LCARS Inspired Website Template by <a href="https://www.thelcars.com" target="_blank">www.TheLCARS.com</a>.				 		 
+                </footer> 
+            </div>
+        </div>
+    </section>	
+    <script type="text/javascript" src="assets/lcars.js"></script>
+    <script>
+    let banners=document.getElementsByClassName('banner');
+    let mjd=Date.now()/86400000+40587;
+    for (let i=0; i<banners.length; i++) {
+        banners.item(i).innerHTML='LCARS • '+mjd.toFixed(1);
+    }
+    </script>
+    {block name="myFooter"}{/block}
+    <div class="headtrim"> </div>
+    <div class="baseboard"> </div>
+</body>
+</html>

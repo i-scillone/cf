@@ -1,0 +1,17 @@
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/i-scillone/library.git"
+        },
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
+    "require": {
+        "smarty/smarty": "^5.8",
+        "ivan/my_classes": "dev-master",
+        "npm-asset/jquery-ui-dist": "*"
+    }
+}
