@@ -1,4 +1,18 @@
 {extends "base.html"}
 {block name="content"}
-Clicca <a href="https://arcom.agenziaentrate.gov.it/CitizenArCom/InitForm.do?ric=report" target="_blank">qui</a>
+<p>Clicca <a href="https://arcom.agenziaentrate.gov.it/CitizenArCom/InitForm.do?ric=report" target="_blank">qui</a></p>
+<form action="index.php" method="post">
+    <p>
+        <label for="file">File dei comuni:</label>
+        <input id="file" name="file" type="text" value="comuni.csv" readonly>
+        <button name="action" type="submit" value="upload" class="littleButton">Upload</button>
+    </p>
+</form>
+<form action="index.php" method="post">
+    <p>
+        <label for="file">File dei comuni:</label>
+        <input id="file" name="file" type="text" value="stati.csv" readonly>
+        <button name="action" type="submit" value="upload" class="littleButton">Upload</button>
+    </p>
+</form>
 {/block}
