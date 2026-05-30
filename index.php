@@ -27,12 +27,15 @@ if (isset($_REQUEST['goTo'])) {
             try {
                 $db=new MyClasses\DB('sqlite:'.__DIR__.'/codici.sqlite');
                 $db->exec(INIT_DB);
-                $f=fopen($_REQUEST['file'],'r');
+                $f=@fopen($_REQUEST['file'],'r');
+                if ($f===false) {
+                    throw new RuntimeException('File non trovato!');
+                }
                 $table=pathinfo($_REQUEST['file'],PATHINFO_FILENAME);
                 $db->exec('DELETE FROM '.$table);
                 $ins=$db->prepare("INSERT INTO {$table} VALUES(?,?)");
                 $firstRow=true;
-                while ($row=fgetcsv($f,null,';')) {
+                while ($row=fgetcsv($f,null,';','"','\\')) {
                     if ($firstRow) {
                         $firstRow=false;
                         continue;
