@@ -11,14 +11,13 @@
     <script src="vendor/npm-asset/jquery-ui-dist/ui/i18n/datepicker-it.js"></script>
     <link rel="stylesheet" href="vendor/npm-asset/jquery-ui-dist/dist/themes/vader/jquery-ui.min.css">
     <style>
-    select { color: inherit; }
-    .littleButton {
-        border-radius: 16px;
-        padding: 0 16px;
-        background: var(--bluey);
-        text-transform: uppercase;
-    }
-
+        input, select { color: inherit; }
+        .littleButton {
+            border-radius: 16px;
+            padding: 0 16px;
+            background: var(--bluey);
+            text-transform: uppercase;
+        }
     </style>
     {block name="myHeader"}{/block}
 </head>
@@ -97,7 +96,10 @@
                     <!-- End content area. -->
                     {/block}
                     {if $feedback}
-                        {$feedback}
+                        <p class="font-gold">{$feedback}</p>
+                    {/if}
+                    {if $error}
+                        <p class="font-red blink-fast">{$error}</p>
                     {/if}
                 </main>
                 <footer>
@@ -112,11 +114,11 @@
     </section>	
     <script type="text/javascript" src="assets/lcars.js"></script>
     <script>
-    let banners=document.getElementsByClassName('banner');
-    let mjd=Date.now()/86400000+40587;
-    for (let i=0; i<banners.length; i++) {
-        banners.item(i).innerHTML='LCARS • '+mjd.toFixed(1);
-    }
+        let banners=document.getElementsByClassName('banner');
+        let mjd=Date.now()/86400000+40587;
+        for (let i=0; i<banners.length; i++) {
+            banners.item(i).innerHTML='LCARS • '+mjd.toFixed(1);
+        }
     </script>
     {block name="myFooter"}{/block}
     <div class="headtrim"> </div>
