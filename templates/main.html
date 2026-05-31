@@ -50,13 +50,16 @@
             </div>
         </div>
         <div class="actions">
-            <button name="action" type="submit" value="insert" class="littleButton">Engage!</button>
+            <button name="action" type="submit" value="calculate" class="littleButton">Engage!</button>
         </div>
         <div class="invalid-message blink-fast font-red">ERRORE NEI CAMPI EVIDENZIATI!</div>
     </form>
 {/block}
 {block name="myFooter"}
     <script>
+        $('#cognome,#nome').on('change',function(ev){
+            this.value = this.value.toUpperCase();
+        });
         $('form').on('submit',function(ev){
             $(this).addClass('was-validated');
             if (!this.checkValidity()) {
@@ -65,13 +68,11 @@
             }
         });
         $('#ldn-name').autocomplete({
-            source: "{$serverURL}/mini/search_country.php",
+            source: "{$serverURL}/cf/search_code.php",
             minLength: 3,
             select: function(event,ui) {
-                $('#country').val(ui.item.value);
-                $('#countryName').val(ui.item.label);
-                if (ui.item.eif) $('#apo').val(1);
-                else $('#apo').val(0);
+                $('#ldn').val(ui.item.value);
+                $('#ldn-name').val(ui.item.label);
                 return false;
             }
         });

@@ -31,7 +31,7 @@ if (isset($_REQUEST['goTo'])) {
             try {
                 $db=new MyClasses\DB('sqlite:'.__DIR__.'/codici.sqlite');
                 $db->exec(INIT_DB);
-                $f=fopen($_REQUEST['file'],'r');
+                $f=@fopen($_REQUEST['file'],'r');
                 if (!$f) {
                     throw new Exception('Impossibile aprire il file');
                 }
@@ -63,6 +63,10 @@ if (isset($_REQUEST['goTo'])) {
                 );
             }
             $smarty->display('download.html');
+            break;
+        case 'calculate':
+            $smarty->assign('feedback',json_encode($_REQUEST));
+            $smarty->display('main.html');
             break;
         default:
             $smarty->assign('error','NOT IMPLEMENTED!');

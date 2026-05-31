@@ -1,12 +1,14 @@
 <?php
 require_once 'vendor/autoload.php';
 
-$db=new MyClasses\DB('sqlite:codici.sqlite');
+$dbg=new MyClasses\Debug();
 try {
-    $sel=$db->prepare('SELECT * FROM main WHERE name LIKE ?');
+    $db=new MyClasses\DB('sqlite:codici.sqlite');
+    $sel=$db->prepare('SELECT codice AS `value`, nome AS `label` FROM main WHERE nome LIKE ?');
     $sel->execute(['%'.$_GET['term'].'%']);
     $res=$sel->fetchAll(PDO::FETCH_ASSOC);
-    
+    $dbg->log($res);
+    echo json_encode($res);
 } catch (Exception $e) {
-    $db->query('CREATE TABLE codici (id INTEGER PRIMARY KEY, codice TEXT, descrizione TEXT)');
+    $dbg->log("Errore alla riga {$e->getLine()}: «{$e->getMessage()}»");
 }
