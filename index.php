@@ -12,6 +12,10 @@ CREATE TABLE IF NOT EXISTS stati (
     codice TEXT PRIMARY KEY,
     nome TEXT NOT NULL
 );
+CREATE VIEW IF NOT EXISTS main AS
+SELECT * FROM comuni
+UNION ALL
+SELECT * FROM stati;
 SQL;
 $dbg->log($_REQUEST);
 $smarty->assign(
@@ -27,9 +31,9 @@ if (isset($_REQUEST['goTo'])) {
             try {
                 $db=new MyClasses\DB('sqlite:'.__DIR__.'/codici.sqlite');
                 $db->exec(INIT_DB);
-                $f=@fopen($_REQUEST['file'],'r');
-                if ($f===false) {
-                    throw new RuntimeException('File non trovato!');
+                $f=fopen($_REQUEST['file'],'r');
+                if (!$f) {
+                    throw new Exception('Impossibile aprire il file');
                 }
                 $table=pathinfo($_REQUEST['file'],PATHINFO_FILENAME);
                 $db->exec('DELETE FROM '.$table);
@@ -62,8 +66,8 @@ if (isset($_REQUEST['goTo'])) {
             break;
         default:
             $smarty->assign('error','NOT IMPLEMENTED!');
-            $smarty->display('index.html');
+            $smarty->display('main.html');
     }
 } else {
-    $smarty->display('index.html');
+    $smarty->display('main.html');
 }
