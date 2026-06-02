@@ -1,5 +1,7 @@
 <?php
 require_once './vendor/autoload.php';
+require_once './codice_fiscale.php';
+
 $dbg=new MyClasses\Debug();
 $smarty=new Smarty\Smarty();
 $smarty->setTemplateDir('./templates');
@@ -62,7 +64,14 @@ if (isset($_REQUEST['goTo'])) {
             $smarty->display('download.html');
             break;
         case 'calculate':
-            $smarty->assign('feedback',json_encode($_REQUEST));
+            $cf = CodiceFiscale::genera(
+                $_REQUEST['nome'],
+                $_REQUEST['cognome'],
+                $_REQUEST['ddn'],
+                $_REQUEST['sesso'],
+                $_REQUEST['ldn']
+            );
+            $smarty->assign('feedback',"Il codice fiscale è: $cf");
             $smarty->display('main.html');
             break;
         default:

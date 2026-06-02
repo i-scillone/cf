@@ -1,118 +1,185 @@
 <?php
 class CodiceFiscale
 {
-    private $db,$mesi,$dispari;
-    public $codice,$ddn,$ldn,$sesso;
-    
-    public function dbg($x)
-    {
-        $info=debug_backtrace();
-        echo $info[0]['line'],"\t",json_encode($x),"\n";
+    // ---------------------------------------------------------
+    // GENERAZIONE
+    // ---------------------------------------------------------
+    public static function genera(
+        string $nome,
+        string $cognome,
+        string $dataNascita,
+        string $sesso,
+        string $codiceComune
+    ): string {
+        $cf  = self::codiceCognome($cognome);
+        $cf .= self::codiceNome($nome);
+        $cf .= self::codiceDataSesso($dataNascita, $sesso);
+        $cf .= strtoupper($codiceComune);
+        $cf .= self::carattereControllo($cf);
+
+        return $cf;
     }
-    public function __construct()
+
+    // ---------------------------------------------------------
+    // VALIDAZIONE
+    // ---------------------------------------------------------
+    public static function valida(string $cf): bool
     {
-        $this->mesi='ABCDEHLMPRST';
-        $this->dispari=array(1,0,5,7,9,13,15,17,19,21,2,4,18,20,11,3,6,8,12,14,16,10,22,25,24,23);
-        $this->codice='';
-        $this->ddn=0;
-        $this->ldn='';
-        $this->sesso='';
-        try { $this->db=new PDO('sqlite:cod_fis.db'); }
-        catch (PDOException $e) { die($e->getMessage); }
-        $this->db->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+        $cf = strtoupper($cf);
+
+        // 1. Formato
+        if (!preg_match('/^[A-Z0-9]{16}$/', $cf)) {
+            return false;
+        }
+
+        // 2. Espansione omocodie sui primi 15 caratteri
+        $cf15 = self::espandiOmocodia(substr($cf, 0, 15));
+
+        // 3. Calcolo carattere di controllo
+        $controlloCalcolato = self::carattereControllo($cf15);
+        $controlloFornito = $cf[15];
+
+        return $controlloCalcolato === $controlloFornito;
     }
-    function __destruct()
+
+    // ---------------------------------------------------------
+    // PARTI DEL CODICE FISCALE
+    // ---------------------------------------------------------
+    public static function codiceCognome(string $cognome): string
     {
-        unset($this->db);
+        return self::estraiConsonantiVocali(strtoupper($cognome));
     }
-    private function estrae($testo)
+
+    public static function codiceNome(string $nome): string
     {
-        $testo=str_split(strtoupper($testo));
-        $cons=preg_grep('/[BCDFGHJKLMNPQRSTVWXYZ]/i',$testo);
-        $voca=preg_grep('/[AEIOU]/i',$testo);
-        return array('C'=>implode($cons),'V'=>implode($voca));
+        return self::estraiConsonantiVocali(strtoupper($nome), true);
     }
-    private function compone($cosa,$lettere)
+
+    public static function codiceDataSesso(string $data, string $sesso): string
     {
-        $res='';
-        $totC=strlen($lettere['C']);
-        $totV=strlen($lettere['V']);
-        if ($cosa=='N' && $totC>=4) $res=$lettere['C'][0].$lettere['C'][2].$lettere['C'][3];
-        elseif ($totC>=3) $res=$lettere['C'][0].$lettere['C'][1].$lettere['C'][2];
-        elseif ($totC==2) $res=$lettere['C'][0].$lettere['C'][1].$lettere['V'][0];
-        elseif ($totC==1 && $totV==2) $res=$lettere['C'][0].$lettere['V'][0].$lettere['V'][1];
-        elseif ($totC==1 && $totV==1) $res=$lettere['C'][0].$lettere['V'][0].'X';
-        elseif ($totV>=2) $res=$lettere['V'][0].$lettere['V'][1].'X';
-        return $res;
+        [$anno, $mese, $giorno] = explode('-', $data);
+
+        $mesi = [
+            1=>'A',2=>'B',3=>'C',4=>'D',5=>'E',6=>'H',
+            7=>'L',8=>'M',9=>'P',10=>'R',11=>'S',12=>'T'
+        ];
+
+        $codice  = substr($anno, -2);
+        $codice .= $mesi[(int)$mese];
+
+        $giorno = (int)$giorno + ($sesso === 'F' ? 40 : 0);
+        $codice .= str_pad($giorno, 2, '0', STR_PAD_LEFT);
+
+        return $codice;
     }
-    public function controllo($testo)
+
+    // ---------------------------------------------------------
+    // CARATTERE DI CONTROLLO
+    // ---------------------------------------------------------
+    public static function carattereControllo(string $cf15): string
     {
-        $testo=strtoupper($testo);
-        $lun=strlen($testo);
-        $somma=0;
-        for ($p=0;$p<$lun;$p++) {
-            $ascii=ord($testo[$p]);
-            if (($p+1)%2==0) {
-                if ($ascii>=0x41 && $ascii<=0x5a) $somma+=$ascii-0x41;
-                else $somma+=$ascii-0x30;
-            } else {
-                if ($ascii>=0x41 && $ascii<=0x5a) $somma+=$this->dispari[$ascii-0x41];
-                else $somma+=$this->dispari[$ascii-0x30];
+        $pari = [
+            '0'=>0,'1'=>1,'2'=>2,'3'=>3,'4'=>4,'5'=>5,'6'=>6,'7'=>7,'8'=>8,'9'=>9,
+            'A'=>0,'B'=>1,'C'=>2,'D'=>3,'E'=>4,'F'=>5,'G'=>6,'H'=>7,'I'=>8,'J'=>9,
+            'K'=>10,'L'=>11,'M'=>12,'N'=>13,'O'=>14,'P'=>15,'Q'=>16,'R'=>17,'S'=>18,'T'=>19,
+            'U'=>20,'V'=>21,'W'=>22,'X'=>23,'Y'=>24,'Z'=>25
+        ];
+
+        $dispari = [
+            '0'=>1,'1'=>0,'2'=>5,'3'=>7,'4'=>9,'5'=>13,'6'=>15,'7'=>17,'8'=>19,'9'=>21,
+            'A'=>1,'B'=>0,'C'=>5,'D'=>7,'E'=>9,'F'=>13,'G'=>15,'H'=>17,'I'=>19,'J'=>21,
+            'K'=>2,'L'=>4,'M'=>18,'N'=>20,'O'=>11,'P'=>3,'Q'=>6,'R'=>8,'S'=>12,'T'=>14,
+            'U'=>16,'V'=>10,'W'=>22,'X'=>25,'Y'=>24,'Z'=>23
+        ];
+
+        $somma = 0;
+        for ($i = 0; $i < 15; $i++) {
+            $c = $cf15[$i];
+            $somma += ($i % 2 === 0) ? $dispari[$c] : $pari[$c];
+        }
+
+        return chr(($somma % 26) + ord('A'));
+    }
+
+    // ---------------------------------------------------------
+    // OMOCODIE
+    // ---------------------------------------------------------
+    private static function espandiOmocodia(string $cf15): string
+    {
+        $mappa = [
+            'L' => '0', 'M' => '1', 'N' => '2', 'P' => '3',
+            'Q' => '4', 'R' => '5', 'S' => '6', 'T' => '7',
+            'U' => '8', 'V' => '9'
+        ];
+
+        $posizioni = [6, 7, 9, 10, 12, 13, 14];
+
+        foreach ($posizioni as $pos) {
+            $c = $cf15[$pos];
+            if (isset($mappa[$c])) {
+                $cf15[$pos] = $mappa[$c];
             }
         }
-        return chr($somma%26+0x41);
+
+        return $cf15;
     }
-    public function genera($datiAnag)
+
+    // ---------------------------------------------------------
+    // UTILITY
+    // ---------------------------------------------------------
+    private static function estraiConsonantiVocali(string $str, bool $isNome = false): string
     {
-        $cognome=$this->estrae($datiAnag['cognome']);
-        $nome=$this->estrae($datiAnag['nome']);
-        $this->codice=$this->compone('C',$cognome);
-        $this->codice.=$this->compone('N',$nome);
-        $this->codice.=substr($datiAnag['ddn'],-2);
-        $mese=(int)substr($datiAnag['ddn'],3,2);
-        $this->codice.=$this->mesi[$mese-1];
-        $giorno=(int)substr($datiAnag['ddn'],0,2);
-        if ($datiAnag['sesso']=='F') $giorno+=40;
-        $this->codice.=sprintf('%02d',$giorno);
-        $st=$this->db->prepare('SELECT CodFisco FROM comuni WHERE lower(comune)=?');
-        $st->execute(array(strtolower($datiAnag['ldn'])));
-        $comune=$st->fetch(PDO::FETCH_NUM);
-        if ($comune===false) {
-            $st=$this->db->prepare('SELECT codice FROM stati WHERE lower(denominaz)=?');
-            $st->execute(array(strtolower($datiAnag['ldn'])));
-            $comune=$st->fetch(PDO::FETCH_NUM);
-            if ($comune===false) die("<p>Luogo di nascita sconosciuto!\n");
+        $consonanti = preg_replace('/[^BCDFGHJKLMNPQRSTVWXYZ]/i', '', $str);
+        $vocali = preg_replace('/[^AEIOU]/i', '', $str);
+
+        if ($isNome && strlen($consonanti) >= 4) {
+            return $consonanti[0] . $consonanti[2] . $consonanti[3];
         }
-        $this->codice.=$comune[0];
-        $this->codice.=$this->controllo($this->codice);
-        return $this->codice;
+
+        $ris = $consonanti . $vocali;
+        return str_pad(substr($ris, 0, 3), 3, 'X');
     }
-    public function decodifica($x)
+    public static function estraiDati(string $cf): array
     {
-        $valido=false;
-        $x=strtoupper($x);
-        $contr=$this->controllo(substr($x,0,-1));
-        if ($contr==$x[15]) {
-            $this->codice=$x;
-            $valido=true;
-            $anno=1900+(int)substr($x,6,2);
-            $mese=strpos($this->mesi,$x[8])+1;
-            $giorno=(int)substr($x,9,2);
-            if ($giorno>40) {
-                $this->sesso='F';
-                $giorno-=40;
-            } else $this->sesso='M';
-            $this->ddn=mktime(0,0,0,$mese,$giorno,$anno);
-            $st=$this->db->prepare('SELECT Comune FROM comuni WHERE CodFisco=?');
-            $st->execute(array(substr($x,11,4)));
-            $row=$st->fetch(PDO::FETCH_NUM);
-            if ($row===false) {
-                $st=$this->db->prepare('SELECT denominaz FROM stati WHERE codice=?');
-                $st->execute(array(substr($x,11,4)));
-                $row=$st->fetch(PDO::FETCH_NUM);
-            }
-            $this->ldn=$row[0];
-        }
-        return $valido;
+        $cf = strtoupper($cf);
+
+        // Espansione omocodie sui primi 15 caratteri
+        $cf15 = self::espandiOmocodia(substr($cf, 0, 15));
+
+        // --- COGNOME ---
+        $cognome = substr($cf, 0, 3);
+
+        // --- NOME ---
+        $nome = substr($cf, 3, 3);
+
+        // --- ANNO ---
+        $anno = (int) substr($cf15, 6, 2);
+        $anno += ($anno >= 0 && $anno <= (int)date('y')) ? 2000 : 1900;
+
+        // --- MESE ---
+        $mesi = [
+            'A'=>1,'B'=>2,'C'=>3,'D'=>4,'E'=>5,'H'=>6,
+            'L'=>7,'M'=>8,'P'=>9,'R'=>10,'S'=>11,'T'=>12
+        ];
+        $mese = $mesi[$cf[8]];
+
+        // --- GIORNO + SESSO ---
+        $giornoCod = (int) substr($cf15, 9, 2);
+        $sesso = ($giornoCod > 40) ? 'F' : 'M';
+        $giorno = ($giornoCod > 40) ? $giornoCod - 40 : $giornoCod;
+
+        // --- CODICE COMUNE ---
+        $codiceComune = substr($cf, 11, 4);
+
+        return [
+            'cognome_codificato' => $cognome,
+            'nome_codificato'    => $nome,
+            'anno'               => $anno,
+            'mese'               => $mese,
+            'giorno'             => $giorno,
+            'sesso'              => $sesso,
+            'codice_comune'      => $codiceComune,
+            'data_nascita'       => sprintf('%04d-%02d-%02d', $anno, $mese, $giorno)
+        ];
     }
 }
