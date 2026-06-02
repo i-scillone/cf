@@ -18,10 +18,7 @@ UNION ALL
 SELECT * FROM stati;
 SQL;
 $dbg->log($_REQUEST);
-$smarty->assign(
-    'serverURL',(($_SERVER['HTTPS'] ?? 'off') == 'on' ? 'https' : 'http') . 
-    '://' . $_SERVER['HTTP_HOST']
-);
+$smarty->assign('serverURL',MyClasses\Net::pathOnServer());
 //$smarty->assign('noSi',['no','sì']);
 if (isset($_REQUEST['goTo'])) {
     $smarty->display($_REQUEST['goTo'].'.html');

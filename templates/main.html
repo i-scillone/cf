@@ -68,7 +68,7 @@
             }
         });
         $('#ldn-name').autocomplete({
-            source: "{$serverURL}/cf/search_code.php",
+            source: "{$serverURL}/search_code.php",
             minLength: 3,
             select: function(event,ui) {
                 $('#ldn').val(ui.item.value);
