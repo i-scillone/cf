@@ -33,24 +33,24 @@
         100% { transform: rotate(360deg); }
     }    
 </style>
-<script>
+<!--script>
     $(function(){
         $('button[type="submit"]').on('click',function(ev){
             $('.loader-container').css('display','flex');
         });
     });
-</script>
+</script-->
 {/block}
 {block name="content"}
 <p>Clicca <a href="https://arcom.agenziaentrate.gov.it/CitizenArCom/InitForm.do?ric=report" target="_blank">qui</a> per scaricare i dati</p>
-<form action="index.php" method="post">
+<form action="upload.php" method="post" target="_blank">
     <p>
         <label for="file">File dei comuni:</label>
         <input id="file" name="file" type="text" value="comuni.csv" readonly>
         <button name="action" type="submit" value="upload" class="littleButton">Upload</button>
     </p>
 </form>
-<form action="index.php" method="post">
+<form action="upload.php" method="post" target="_blank">
     <p>
         <label for="file">File dei comuni:</label>
         <input id="file" name="file" type="text" value="stati.csv" readonly>

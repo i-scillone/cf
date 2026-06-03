@@ -26,43 +26,6 @@ if (isset($_REQUEST['goTo'])) {
     $smarty->display($_REQUEST['goTo'].'.html');
 } elseif (isset($_REQUEST['action'])) {
     switch ($_REQUEST['action']) {
-        case 'upload':
-            try {
-                $db=new MyClasses\DB('sqlite:'.__DIR__.'/codici.sqlite');
-                $db->exec(INIT_DB);
-                $f=@fopen($_REQUEST['file'],'r');
-                if (!$f) {
-                    throw new Exception('Impossibile aprire il file');
-                }
-                $table=pathinfo($_REQUEST['file'],PATHINFO_FILENAME);
-                $db->exec('DELETE FROM '.$table);
-                $ins=$db->prepare("INSERT INTO {$table} VALUES(?,?)");
-                $firstRow=true;
-                while ($row=fgetcsv($f,null,';','"','\\')) {
-                    if ($firstRow) {
-                        $firstRow=false;
-                        continue;
-                    }
-                    if ($table=='comuni') {
-                        $ins->bindValue(1,$row[0],PDO::PARAM_STR);
-                        $ins->bindValue(2,$row[2],PDO::PARAM_STR);
-                    } else {
-                        $ins->bindValue(1,$row[0],PDO::PARAM_STR);
-                        $ins->bindValue(2,$row[1],PDO::PARAM_STR);
-                    }
-                    $ins->execute();
-                }
-                fclose($f);
-                $db=null;
-                $smarty->assign('feedback',"Tabella $table importata");
-            } catch (Exception $e) {
-                $smarty->assign(
-                    'error',
-                    "Errore alla riga {$e->getLine()}: «{$e->getMessage()}»"
-                );
-            }
-            $smarty->display('download.html');
-            break;
         case 'calculate':
             $cf = CodiceFiscale::genera(
                 $_REQUEST['nome'],
@@ -73,6 +36,34 @@ if (isset($_REQUEST['goTo'])) {
             );
             $smarty->assign('feedback',"Il codice fiscale è: $cf");
             $smarty->display('main.html');
+            break;
+        case 'validate':
+            $ok=CodiceFiscale::valida($_REQUEST['cf']);
+            if ($ok) {
+                try {
+                    $db=new MyClasses\DB('sqlite:codici.sqlite');
+                    $sel=$db->prepare('SELECT nome FROM main WHERE codice=?');
+                    $dati=CodiceFiscale::estraiDati($_REQUEST['cf']);
+                    $feedback=$_REQUEST['cf'].' è valido<br>';
+                    $feedback.='ed appartiene ad ';
+                    $feedback.=($dati['sesso']=='M'? 'uno uomo': 'una donna').' ';
+                    $f=new IntlDateFormatter('it',IntlDateFormatter::LONG,IntlDateFormatter::NONE);
+                    $ddn=new DateTimeImmutable($dati['data_nascita']);
+                    $feedback.='nat'.($dati['sesso']=='M'?'o':'a').' il '.$f->format($ddn);
+                    $sel->execute([$dati['codice_comune']]);
+                    $nome=$sel->fetchColumn();
+                    $feedback.=" a/in {$nome}";
+                    $smarty->assign('feedback',$feedback);
+                } catch (Exception $e) {
+                    $smarty->assign(
+                        'error',
+                        "Errore alla riga {$e->getLine()}: «{$e->getMessage()}"
+                    );
+                }
+            } else {
+                $smarty->assign('error',$_REQUEST['cf'].' non è valido!');
+            }
+            $smarty->display('validate.html');
             break;
         default:
             $smarty->assign('error','NOT IMPLEMENTED!');

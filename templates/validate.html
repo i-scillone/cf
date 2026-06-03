@@ -1,0 +1,37 @@
+{extends "base.html"}
+{block name="myHeader"}
+<style>
+    .ui-widget { font-size: 14px; }
+    .dates { color: inherit; }
+    #from, #to { width: 4em; }
+    .was-validated input:invalid { color: var(--space-white); background: var(--red); }
+    .invalid-message { display:none; }
+    .was-validated:has(:invalid) .invalid-message {
+        display: block;
+    }
+    .sidebar-nav button { background-color: var(--magenta); }
+</style>
+{/block}
+{block name="content"}
+<form action="index.php" method="post" novalidate>
+    <label for="cf">Codice Fiscale:</label>
+    <input id="cf" name="cf" type="text" required>
+    <button name="action" type="submit" value="validate" class="littleButton">
+        Engage!
+    </button>
+</form>
+{/block}
+{block name="myFooter"}
+<script>
+    $('#cf').on('change',function(ev){
+        this.value = this.value.toUpperCase();
+    });
+    $('form').on('submit',function(ev){
+        $(this).addClass('was-validated');
+        if (!this.checkValidity()) {
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+    });
+</script>
+{/block}

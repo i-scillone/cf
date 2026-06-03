@@ -45,17 +45,17 @@ class CodiceFiscale
     // ---------------------------------------------------------
     // PARTI DEL CODICE FISCALE
     // ---------------------------------------------------------
-    public static function codiceCognome(string $cognome): string
+    private static function codiceCognome(string $cognome): string
     {
         return self::estraiConsonantiVocali(strtoupper($cognome));
     }
 
-    public static function codiceNome(string $nome): string
+    private static function codiceNome(string $nome): string
     {
         return self::estraiConsonantiVocali(strtoupper($nome), true);
     }
 
-    public static function codiceDataSesso(string $data, string $sesso): string
+    private static function codiceDataSesso(string $data, string $sesso): string
     {
         [$anno, $mese, $giorno] = explode('-', $data);
 
@@ -76,7 +76,7 @@ class CodiceFiscale
     // ---------------------------------------------------------
     // CARATTERE DI CONTROLLO
     // ---------------------------------------------------------
-    public static function carattereControllo(string $cf15): string
+    private static function carattereControllo(string $cf15): string
     {
         $pari = [
             '0'=>0,'1'=>1,'2'=>2,'3'=>3,'4'=>4,'5'=>5,'6'=>6,'7'=>7,'8'=>8,'9'=>9,
