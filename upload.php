@@ -16,18 +16,11 @@
 <?php
 require_once 'vendor/autoload.php';
 const INIT_DB=<<<SQL
-CREATE TABLE IF NOT EXISTS comuni (
+CREATE TABLE IF NOT EXISTS main (
     codice TEXT PRIMARY KEY,
-    nome TEXT NOT NULL
+    nome TEXT NOT NULL,
+    provincia TEXT
 );
-CREATE TABLE IF NOT EXISTS stati (
-    codice TEXT PRIMARY KEY,
-    nome TEXT NOT NULL
-);
-CREATE VIEW IF NOT EXISTS main AS
-SELECT * FROM comuni
-UNION ALL
-SELECT * FROM stati;
 SQL;
 
 try {
@@ -38,8 +31,7 @@ try {
         throw new Exception('Impossibile aprire il file');
     }
     $table=pathinfo($_REQUEST['file'],PATHINFO_FILENAME);
-    $db->exec('DELETE FROM '.$table);
-    $ins=$db->prepare("INSERT INTO {$table} VALUES(?,?)");
+    $ins=$db->prepare("INSERT INTO main VALUES(?,?,?)");
     $firstRow=true;
     while ($row=fgetcsv($f,null,';','"','\\')) {
         set_time_limit(60);
@@ -50,9 +42,11 @@ try {
         if ($table=='comuni') {
             $ins->bindValue(1,$row[0],PDO::PARAM_STR);
             $ins->bindValue(2,$row[2],PDO::PARAM_STR);
+            $ins->bindValue(3,$row[1],PDO::PARAM_STR);
         } else {
             $ins->bindValue(1,$row[0],PDO::PARAM_STR);
             $ins->bindValue(2,$row[1],PDO::PARAM_STR);
+            $ins->bindValue(3,null,PDO::PARAM_NULL);
         }
         $ins->execute();
         echo '<p>'.json_encode($row,JSON_UNESCAPED_SLASHES)."</p>\n";

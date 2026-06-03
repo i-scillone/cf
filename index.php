@@ -5,20 +5,6 @@ require_once './codice_fiscale.php';
 $dbg=new MyClasses\Debug();
 $smarty=new Smarty\Smarty();
 $smarty->setTemplateDir('./templates');
-const INIT_DB=<<<SQL
-CREATE TABLE IF NOT EXISTS comuni (
-    codice TEXT PRIMARY KEY,
-    nome TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS stati (
-    codice TEXT PRIMARY KEY,
-    nome TEXT NOT NULL
-);
-CREATE VIEW IF NOT EXISTS main AS
-SELECT * FROM comuni
-UNION ALL
-SELECT * FROM stati;
-SQL;
 $dbg->log($_REQUEST);
 $smarty->assign('serverURL',MyClasses\Net::pathOnServer());
 //$smarty->assign('noSi',['no','sì']);
@@ -42,17 +28,17 @@ if (isset($_REQUEST['goTo'])) {
             if ($ok) {
                 try {
                     $db=new MyClasses\DB('sqlite:codici.sqlite');
-                    $sel=$db->prepare('SELECT nome FROM main WHERE codice=?');
+                    $sel=$db->prepare('SELECT nome,provincia FROM main WHERE codice=?');
                     $dati=CodiceFiscale::estraiDati($_REQUEST['cf']);
-                    $feedback=$_REQUEST['cf'].' è valido<br>';
+                    $feedback=$_REQUEST['cf'].' è un codice valido<br>';
                     $feedback.='ed appartiene ad ';
-                    $feedback.=($dati['sesso']=='M'? 'uno uomo': 'una donna').' ';
+                    $feedback.=($dati['sesso']=='M'? 'un maschio': 'una femmina').' ';
                     $f=new IntlDateFormatter('it',IntlDateFormatter::LONG,IntlDateFormatter::NONE);
                     $ddn=new DateTimeImmutable($dati['data_nascita']);
                     $feedback.='nat'.($dati['sesso']=='M'?'o':'a').' il '.$f->format($ddn);
                     $sel->execute([$dati['codice_comune']]);
-                    $nome=$sel->fetchColumn();
-                    $feedback.=" a/in {$nome}";
+                    $ldn=$sel->fetch(PDO::FETCH_OBJ);
+                    $feedback.=" a/in {$ldn->nome} ({$ldn->provincia})";
                     $smarty->assign('feedback',$feedback);
                 } catch (Exception $e) {
                     $smarty->assign(
@@ -61,7 +47,7 @@ if (isset($_REQUEST['goTo'])) {
                     );
                 }
             } else {
-                $smarty->assign('error',$_REQUEST['cf'].' non è valido!');
+                $smarty->assign('error',$_REQUEST['cf'].' non è un codice valido!');
             }
             $smarty->display('validate.html');
             break;
