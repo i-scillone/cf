@@ -1,0 +1,3 @@
+[proxy]
+url=example.com:80
+userpass=example_user:example_password

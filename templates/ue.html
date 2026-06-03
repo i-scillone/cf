@@ -1,0 +1,44 @@
+{extends "base.html"}
+{block name="myHeader"}
+<link rel="stylesheet" href="grid.css">
+<style>
+    .ui-widget { font-size: 14px; }
+    .dates { color: inherit; }
+    #from, #to { width: 4em; }
+    .was-validated input:invalid { color: var(--space-white); background: var(--red); }
+    .invalid-message { display:none; }
+    .was-validated:has(:invalid) .invalid-message {
+        display: block;
+    }
+    .sidebar-nav button { background-color: var(--magenta); }
+</style>
+{/block}
+{block name="content"}
+<form action="index.php" method="post" novalidate class="mainForm">
+<div class="row">
+    <label for="msCode" class="form-label">Stato (codice ISO):</label>
+    <input id="msCode" name="msCode" type="text" value="IT">
+</div>
+<div class="row">
+    <label for="tinNumber" class="form-label">TIN:</label>
+    <input id="tinNumber" name="tinNumber" type="text">
+</div>
+<div class="actions">
+    <button name="action" type="submit" value="tin" class="littleButton">Engage!</button>
+</div>
+</form>
+{/block}
+{block name="myFooter"}
+<script>
+    $('#cf').on('change',function(ev){
+        this.value = this.value.toUpperCase();
+    });
+    $('form').on('submit',function(ev){
+        $(this).addClass('was-validated');
+        if (!this.checkValidity()) {
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+    });
+</script>
+{/block}

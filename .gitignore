@@ -6,3 +6,4 @@ composer.lock
 *.csv
 *.sqlite
 /test*
+*.ini
