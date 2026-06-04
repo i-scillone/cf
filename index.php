@@ -36,9 +36,9 @@ if (!file_exists('config.ini')) {
                     $feedback="<i>{$_REQUEST['cf']}</i> è un codice valido<br>";
                     $feedback.='ed appartiene ad ';
                     $feedback.=($dati['sesso']=='M'? 'un maschio': 'una femmina').' ';
-                    $f=new IntlDateFormatter('it',IntlDateFormatter::LONG,IntlDateFormatter::NONE);
+                    $f=new IntlDateFormatter('it',IntlDateFormatter::MEDIUM,IntlDateFormatter::NONE);
                     $ddn=new DateTimeImmutable($dati['data_nascita']);
-                    $feedback.='nat'.($dati['sesso']=='M'?'o':'a').' il '.$f->format($ddn);
+                    $feedback.='nat'.($dati['sesso']=='M'?'o':'a').' il '.strtoupper($f->format($ddn));
                     $sel->execute([$dati['codice_comune']]);
                     $ldn=$sel->fetch(PDO::FETCH_OBJ);
                     $feedback.=" a/in {$ldn->nome} ({$ldn->provincia})";

@@ -1,34 +1,23 @@
 {extends "base.html"}
 {block name="myHeader"}
     <link rel="stylesheet" href="grid.css">
-    <style>
-    .ui-widget { font-size: 14px; }
-    .dates { color: inherit; }
-    #from, #to { width: 4em; }
-    .was-validated input:invalid { color: var(--space-white); background: var(--red); }
-    .invalid-message { display:none; }
-    .was-validated:has(:invalid) .invalid-message {
-        display: block;
-    }
-    .sidebar-nav button { background-color: var(--magenta); }
-    </style>
 {/block}
 {block name="content"}
     <form action="index.php" method="post" class="mainForm" novalidate>
         <div class="row">
-            <label for="cognome">Cognome:</label>
+            <label for="cognome">COGNOME:</label>
             <div class="fields">
                 <input id="cognome" name="cognome" type="text" required>
             </div>
         </div>
         <div class="row">
-            <label for="nome">Nome:</label>
+            <label for="nome">NOME:</label>
             <div class="fields">
                 <input id="nome" name="nome" type="text" required>
             </div>
         </div>
         <div class="row">
-            <label for="sesso">Sesso:</label>
+            <label for="sesso">SESSO:</label>
             <div class="fields">
                 <select id="sesso" name="sesso">
                     <option value="M">maschio</option>
@@ -37,13 +26,14 @@
             </div>
         </div>
         <div class="row">
-            <label for="ddn">Data di nascita:</label>
+            <label for="ddn-localized">DATA DI NASCITA:</label>
             <div class="fields">
-                <input id="ddn" name="ddn" type="date" required>
+                <input id="ddn-localized" type="text" required>
+                <input id="ddn" name="ddn" type="hidden">
             </div>
         </div>
         <div class="row">
-            <label for="ldn-name">Luogo di n.:</label>
+            <label for="ldn-name">LUOGO DI N.:</label>
             <div class="fields">
                 <input id="ldn-name" type="text" required>
                 <input id="ldn" name="ldn" type="hidden" required>
@@ -66,6 +56,11 @@
                 ev.preventDefault();
                 ev.stopPropagation();
             }
+        });
+        $('#ddn-localized').datepicker({
+            changeYear: true,
+            altFormat: 'yy-mm-dd',
+            altField: '#ddn'
         });
         $('#ldn-name').autocomplete({
             source: "{$serverURL}/search_code.php",

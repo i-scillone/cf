@@ -19,6 +19,12 @@
             background: var(--bluey);
             text-transform: uppercase;
         }
+        .ui-widget { font-size: 14px; }
+        .was-validated input:invalid { color: var(--space-white); background: var(--red); }
+        .invalid-message { display:none; }
+        .was-validated:has(:invalid) .invalid-message {
+            display: block;
+        }
     </style>
     {block name="myHeader"}{/block}
 </head>
@@ -62,10 +68,10 @@
                 <div>
                     <div class="panel-3">03<span class="hop">-111968</span></div>
                     <div class="sidebar-nav">
-                        <a href="index.php" class="button-lilac">Main</a>
-                        <a href="index.php?goTo=validate" class="button-lilac">Validate</a>
-                        <a href="index.php?goTo=ue" class="button-lilac">U.E.</a>
-                        <a href="index.php?goTo=download" class="button-lilac">Download</a>
+                        <a href="index.php" class="button-lilac">Calcola</a>
+                        <a href="index.php?goTo=validate" class="button-lilac">Convalida</a>
+                        <a href="index.php?goTo=ue" class="button-lilac">Conv. U.E.</a>
+                        <a href="index.php?goTo=download" class="button-lilac">Codici</a>
                     </div>
                     <div class="panel-4">04<span class="hop">-041969</span></div>
                     <div class="panel-5">05<span class="hop">-1701D</span></div>

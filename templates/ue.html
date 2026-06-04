@@ -1,22 +1,11 @@
 {extends "base.html"}
 {block name="myHeader"}
 <link rel="stylesheet" href="grid.css">
-<style>
-    .ui-widget { font-size: 14px; }
-    .dates { color: inherit; }
-    #from, #to { width: 4em; }
-    .was-validated input:invalid { color: var(--space-white); background: var(--red); }
-    .invalid-message { display:none; }
-    .was-validated:has(:invalid) .invalid-message {
-        display: block;
-    }
-    .sidebar-nav button { background-color: var(--magenta); }
-</style>
 {/block}
 {block name="content"}
 <form action="index.php" method="post" novalidate class="mainForm">
 <div class="row">
-    <label for="msCode" class="form-label">Stato (codice ISO):</label>
+    <label for="msCode" class="form-label">STATO (CODICE ISO):</label>
     <input id="msCode" name="msCode" type="text" value="IT">
 </div>
 <div class="row">
