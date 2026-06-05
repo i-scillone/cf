@@ -16,10 +16,15 @@
 <?php
 require_once 'vendor/autoload.php';
 const INIT_DB=<<<SQL
-CREATE TABLE IF NOT EXISTS main (
+CREATE TABLE IF NOT EXISTS main(
     codice TEXT PRIMARY KEY,
     nome TEXT NOT NULL,
     provincia TEXT
+);
+CREATE TABLE IF NOT EXISTS iso(
+    alpha3 TEXT PRIMARY KEY,
+    alpha2 TEXT NOT NULL,
+    nome TEXT NOT NULL
 );
 SQL;
 
@@ -31,9 +36,16 @@ try {
         throw new Exception('Impossibile aprire il file');
     }
     $table=pathinfo($_REQUEST['file'],PATHINFO_FILENAME);
-    $ins=$db->prepare("INSERT INTO main VALUES(?,?,?)");
+    if ($table=='iso') {
+        $realTable='iso';
+        $sep=',';
+    } else {
+        $realTable='main';
+        $sep=';';
+    }    
+    $ins=$db->prepare("INSERT INTO $realTable VALUES(?,?,?)");
     $firstRow=true;
-    while ($row=fgetcsv($f,null,';','"','\\')) {
+    while ($row=fgetcsv($f,null,$sep,'"','\\')) {
         set_time_limit(60);
         if ($firstRow) {
             $firstRow=false;
@@ -43,10 +55,14 @@ try {
             $ins->bindValue(1,$row[0],PDO::PARAM_STR);
             $ins->bindValue(2,$row[2],PDO::PARAM_STR);
             $ins->bindValue(3,$row[1],PDO::PARAM_STR);
-        } else {
+        } elseif ($table=='stati') {
             $ins->bindValue(1,$row[0],PDO::PARAM_STR);
             $ins->bindValue(2,$row[1],PDO::PARAM_STR);
             $ins->bindValue(3,null,PDO::PARAM_NULL);
+        } elseif ($table=='iso') {
+            $ins->bindValue(1,$row[2],PDO::PARAM_STR);
+            $ins->bindValue(2,$row[9],PDO::PARAM_STR);
+            $ins->bindValue(3,$row[40],PDO::PARAM_STR);
         }
         $ins->execute();
         echo '<p>'.json_encode($row,JSON_UNESCAPED_SLASHES)."</p>\n";

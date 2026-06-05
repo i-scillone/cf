@@ -1,46 +1,4 @@
 {extends "base.html"}
-{block name="myHeader"}
-<style>
-    .loader-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;  /* Prende tutta la larghezza dello schermo */
-        height: 100vh; /* Prende tutta l'altezza dello schermo */
-        background-color: rgba(0, 0, 0, 0.8); /* Sfondo semi-trasparente */
-        /* Il superpotere di Flexbox per centrare */
-        display: none; /* "none" solo all'inizio */
-        justify-content: center; /* Centra in orizzontale */
-        align-items: center;     /* Centra in verticale */
-        z-index: 9999; /* Lo tiene sopra a qualsiasi altro elemento */
-    }    
-    .spinner {
-        /* Dimensioni dello spinner */
-        width: 50px;
-        height: 50px;
-        /* Crea lo spessore del cerchio (grigio chiaro su tutti i lati) */
-        border: 6px solid var(--orange);
-        /* Colora solo il lato superiore per creare l'effetto "spicchio" */
-        border-top: 6px solid var(--space-white);
-        /* Trasforma il quadrato in un cerchio perfetto */
-        border-radius: 50%;
-        /* Applica l'animazione: nome, durata, andamento, ripetizione infinita */
-        animation: spin 1s linear infinite;
-    }
-    /* Definizione dell'animazione di rotazione */
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }    
-</style>
-<!--script>
-    $(function(){
-        $('button[type="submit"]').on('click',function(ev){
-            $('.loader-container').css('display','flex');
-        });
-    });
-</script-->
-{/block}
 {block name="content"}
 <p>CLICCA <a href="https://arcom.agenziaentrate.gov.it/CitizenArCom/InitForm.do?ric=report" target="_blank">QUI</a> PER SCARICARE I DATI</p>
 <form action="upload.php" method="post" target="_blank">
@@ -52,10 +10,16 @@
 </form>
 <form action="upload.php" method="post" target="_blank">
     <p>
-        <label for="file">FILE DEI COMUNI:</label>
+        <label for="file">FILE DEGLI STATI:</label>
         <input id="file" name="file" type="text" value="stati.csv" readonly>
         <button name="action" type="submit" value="upload" class="littleButton">Upload</button>
     </p>
 </form>
-<div class="loader-container"><div class="spinner"></div></div>
+<form action="upload.php" method="post" target="_blank">
+    <p>
+        <label for="file">CODICI ISO DEGLI STATI:</label>
+        <input id="file" name="file" type="text" value="iso.csv" readonly>
+        <button name="action" type="submit" value="upload" class="littleButton">Upload</button>
+    </p>
+</form>
 {/block}

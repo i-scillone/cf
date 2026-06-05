@@ -1,12 +1,18 @@
 {extends "base.html"}
 {block name="myHeader"}
 <link rel="stylesheet" href="grid.css">
+<style>
+    #msCode { width: 3ex; }
+</style>
 {/block}
 {block name="content"}
 <form action="index.php" method="post" novalidate class="mainForm">
 <div class="row">
     <label for="msCode" class="form-label">STATO (CODICE ISO):</label>
-    <input id="msCode" name="msCode" type="text" value="IT">
+    <div class="fields">
+        <input id="nome" type="text">
+        <input id="msCode" name="msCode" type="text" value="IT">
+    </div>
 </div>
 <div class="row">
     <label for="tinNumber" class="form-label">TIN:</label>
@@ -27,6 +33,15 @@
         if (!this.checkValidity()) {
             ev.preventDefault();
             ev.stopPropagation();
+        }
+    });
+    $('#nome').autocomplete({
+        source: "{$serverURL}/search_iso.php",
+        minLength: 3,
+        select: function(event,ui) {
+            $('#msCode').val(ui.item.value);
+            $('#nome').val(ui.item.label);
+            return false;
         }
     });
 </script>
