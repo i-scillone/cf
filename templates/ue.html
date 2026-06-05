@@ -11,12 +11,12 @@
     <label for="msCode" class="form-label">STATO (CODICE ISO):</label>
     <div class="fields">
         <input id="nome" type="text">
-        <input id="msCode" name="msCode" type="text" value="IT">
+        <input id="msCode" name="msCode" type="text" value="IT" required>
     </div>
 </div>
 <div class="row">
     <label for="tinNumber" class="form-label">TIN:</label>
-    <input id="tinNumber" name="tinNumber" type="text">
+    <input id="tinNumber" name="tinNumber" type="text" required>
 </div>
 <div class="actions">
     <button name="action" type="submit" value="tin" class="littleButton">Engage!</button>
@@ -25,7 +25,7 @@
 {/block}
 {block name="myFooter"}
 <script>
-    $('#cf').on('change',function(ev){
+    $('#tinNumber').on('change',function(ev){
         this.value = this.value.toUpperCase();
     });
     $('form').on('submit',function(ev){
