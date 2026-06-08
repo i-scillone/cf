@@ -36,18 +36,12 @@ try {
         throw new Exception('Impossibile aprire il file');
     }
     $table=pathinfo($_REQUEST['file'],PATHINFO_FILENAME);
-    if ($table=='iso') {
-        $realTable='iso';
-        $sep=',';
-    } else {
-        $realTable='main';
-        $sep=';';
-    }    
+    $realTable= $table=='iso'? 'iso': 'main';
     $ins=$db->prepare("INSERT INTO $realTable VALUES(?,?,?)");
     $firstRow=true;
-    while ($row=fgetcsv($f,null,$sep,'"','\\')) {
+    while ($row=fgetcsv($f,null,';','"','\\')) {
         set_time_limit(60);
-        if ($firstRow) {
+        if ($firstRow || empty($row[0])) {
             $firstRow=false;
             continue;
         }
@@ -60,9 +54,9 @@ try {
             $ins->bindValue(2,$row[1],PDO::PARAM_STR);
             $ins->bindValue(3,null,PDO::PARAM_NULL);
         } elseif ($table=='iso') {
-            $ins->bindValue(1,$row[2],PDO::PARAM_STR);
-            $ins->bindValue(2,$row[9],PDO::PARAM_STR);
-            $ins->bindValue(3,$row[40],PDO::PARAM_STR);
+            $ins->bindValue(1,$row[12],PDO::PARAM_STR);
+            $ins->bindValue(2,$row[11],PDO::PARAM_STR);
+            $ins->bindValue(3,$row[6],PDO::PARAM_STR);
         }
         $ins->execute();
         echo '<p>'.json_encode($row,JSON_UNESCAPED_SLASHES)."</p>\n";
