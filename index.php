@@ -56,7 +56,6 @@ if (!file_exists('config.ini')) {
             break;
         case 'tin':
             $conf=parse_ini_file('config.ini');
-            $dbg->log($conf);
             $curl=curl_init('https://ec.europa.eu/taxation_customs/tin/rest-api/tinRequest');
             curl_setopt_array($curl,[
                 CURLOPT_RETURNTRANSFER=>true,
